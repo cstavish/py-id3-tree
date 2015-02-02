@@ -15,9 +15,43 @@ def misclassification():
 def gini():
 	return
 
+class ID3_Tree:
+	def __init__(self, labels, features, examples, gain_func):
+		self.labels = labels
+		self.features = features
+		self.examples = examples
+		self.gain_func = gain_func
 
-if __name__ == '__main__':
+	def _train(self, examples, features):
+		root = {}
 
+		# if all examples have the same label
+			# return root with that label
+
+
+
+		# if features is empty
+			# return root with most common label in examples
+
+		# compute gain() for all features
+		# associate root with xi* (highest gain)
+
+		# for each possible value of xi*:
+			# find Sv (subset of examples where xi*=v)
+			# if Sv is not empty:
+				# recur with Sv, and all features except xi*
+				# make that subtree roots child at branch v (root.values[v] = subtree)
+			# else
+				# make leaf node (string, as opposed to object) of most common label in examples
+				# root.values[v] = leaf, return root
+
+	def train(self):
+		return
+
+	def classify(self, object):
+		return
+
+def main():
 	features = []
 	examples = []
 	labels = []
@@ -47,6 +81,26 @@ if __name__ == '__main__':
 				feat = {'name': tokens[0], 'values': tokens[1:]}
 				features.append(feat);
 		config_f.close()
-	
+
+	with open(sys.argv[3]) as train_f:
+		for idx, line in enumerate(train_f.readlines()):
+			tokens = line.rstrip().split(',')
+			example = {'label': tokens[1]}
+			feature_dict = {}
+			for idx, val in enumerate(tokens[2:]):
+				feature_name = features[idx]['name']
+				feature_dict[feature_name] = val
+			example['values'] = feature_dict
+			examples.append(example)
+		train_f.close()
+
+	tree = ID3_Tree(labels, features, examples, gain_func);
+	tree.train()
+
+
+
+if __name__ == '__main__':
+	main()
+
 
 
