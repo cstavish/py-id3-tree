@@ -3,6 +3,7 @@
 # Coleman Stavish
 
 import sys
+from collections import Counter
 
 # define gain functions
 
@@ -23,18 +24,31 @@ class ID3_Tree:
 		self.gain_func = gain_func
 
 	def _train(self, examples, features):
-		root = {}
+		root = {'children:' {}}
 
 		# if all examples have the same label
-			# return root with that label
+			# return root as leaf node with that label
+		all_identical = true
+		for i in xrange(1, len(examples)):
+			if examples[0]['label'] != examples[i]['label']:
+				all_identical = false
+				break
 
-
+		if all_identical:
+			return examples[0]['label']
 
 		# if features is empty
 			# return root with most common label in examples
 
+		if len(features) == 0:
+			labels = [e['label'] for e in examples]
+			return Counter(labels).most_common(1)
+
 		# compute gain() for all features
 		# associate root with xi* (highest gain)
+
+		gain_values = [(f, self.gain_func(f, examples)) for f in features]
+		xi_star = max(gain_values, key=lambda x: x[1])[0]
 
 		# for each possible value of xi*:
 			# find Sv (subset of examples where xi*=v)
@@ -45,8 +59,22 @@ class ID3_Tree:
 				# make leaf node (string, as opposed to object) of most common label in examples
 				# root.values[v] = leaf, return root
 
+		for v in xi_star['values']:
+			Sv = []
+			for e in examples:
+				if e['values'][xi_star['name']] == v:
+					Sv.append(e)
+			if len(Sv) > 0:
+				subtree = self._train(Sv, [f for f in features if f != xi_star])
+				root['children'][v] = subtree
+			else:
+				labels = [e['label'] for e in examples]
+				root['children'][v] = Counter(labels).most_common(1)
+
+		return root
+
 	def train(self):
-		return
+		return self._train(self.examples, self.features)
 
 	def classify(self, object):
 		return
@@ -96,8 +124,6 @@ def main():
 
 	tree = ID3_Tree(labels, features, examples, gain_func);
 	tree.train()
-
-
 
 if __name__ == '__main__':
 	main()
