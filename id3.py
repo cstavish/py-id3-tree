@@ -99,7 +99,7 @@ class ID3_Tree:
 	def train(self):
 		self.root = self._train(self.examples, self.features)
 
-	def print_tree(self, root, level):
+	def _print_tree(self, root, level):
 		if root == None:
 			root = self.root
 		for child_key in root['children'].keys():
@@ -108,14 +108,25 @@ class ID3_Tree:
 				print ('\t' * level) + root['feature_name'] + '=' + child_key + ' ' + leaf[0] + ' ' + str(leaf[1]) + '/' + str(leaf[2])
 			else:
 				print ('\t' * level) + root['feature_name'] + '=' + child_key
-				self.print_tree(root['children'][child_key], level + 1)
+				self._print_tree(root['children'][child_key], level + 1)
 
-	def classify(self, object):
-		return
+	def print_tree(self):
+		self._print_tree(self.root, 0)
+
+	def _classify(self, data_point, root):
+		# base case
+		if type(root) is tuple:
+			return root[0]
+
+		return self._classify(data_point, root['children'][data_point[root['feature_name']]])
+
+	def classify(self, data_point):
+		return self._classify(data_point, self.root)
 
 def main():
 	features = []
-	examples = []
+	training_set = []
+	test_set = []
 	labels = []
 	diversity_func = None
 
@@ -145,7 +156,7 @@ def main():
 		config_f.close()
 
 	with open(sys.argv[3]) as train_f:
-		for idx, line in enumerate(train_f.readlines()):
+		for line in train_f.readlines():
 			tokens = line.rstrip().split(',')
 			example = {'label': tokens[1]}
 			feature_dict = {}
@@ -153,16 +164,38 @@ def main():
 				feature_name = features[idx]['name']
 				feature_dict[feature_name] = val
 			example['values'] = feature_dict
-			examples.append(example)
+			training_set.append(example)
 		train_f.close()
 
-	tree = ID3_Tree(labels, features, examples, diversity_func);
-	tree.train()
-	tree.print_tree(tree.root, 0)
+	with open(sys.argv[4]) as test_f:
+		for line in test_f.readlines():
+			tokens = line.rstrip().split(',')
+			data_point = {'label': tokens[1]}
+			feature_dict = {}
+			for idx, val in enumerate(tokens[2:]):
+				feature_name = features[idx]['name']
+				feature_dict[feature_name] = val
+			data_point['values'] = feature_dict
+			test_set.append(data_point)
+		test_f.close()
 
+	tree = ID3_Tree(labels, features, training_set, diversity_func);
+	tree.train()
+
+	print 'Using ' + sys.argv[1] + ' in Gain function:'
+
+	training_results = [1 if tree.classify(e['values']) == e['label'] else 0 for e in training_set]
+	n_correct = Counter(training_results)[1]
+
+	print 'The accuracy on the training set is ' + str(n_correct) + '/' + str(len(training_set)) + ' = ' + str((float(n_correct)/len(training_set)*100)) + '%'
+
+	test_results = [1 if tree.classify(e['values']) == e['label'] else 0 for e in test_set]
+	n_correct = Counter(test_results)[1]
+
+	print 'The accuracy on the test set is ' + str(n_correct) + '/' + str(len(test_set)) + ' = ' + str((float(n_correct)/len(test_set)*100)) + '%'
+
+	print 'The final decision tree:'
+	tree.print_tree()
 
 if __name__ == '__main__':
 	main()
-
-
-
