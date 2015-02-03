@@ -184,13 +184,13 @@ def main():
 
 	print 'Using ' + sys.argv[1] + ' in Gain function:'
 
-	training_results = [1 if tree.classify(e['values']) == e['label'] else 0 for e in training_set]
-	n_correct = Counter(training_results)[1]
+	training_results = [tree.classify(e['values']) == e['label'] for e in training_set]
+	n_correct = Counter(training_results)[True]
 
 	print 'The accuracy on the training set is ' + str(n_correct) + '/' + str(len(training_set)) + ' = ' + str((float(n_correct)/len(training_set)*100)) + '%'
 
-	test_results = [1 if tree.classify(e['values']) == e['label'] else 0 for e in test_set]
-	n_correct = Counter(test_results)[1]
+	test_results = [tree.classify(e['values']) == e['label'] for e in test_set]
+	n_correct = Counter(test_results)[True]
 
 	print 'The accuracy on the test set is ' + str(n_correct) + '/' + str(len(test_set)) + ' = ' + str((float(n_correct)/len(test_set)*100)) + '%'
 
