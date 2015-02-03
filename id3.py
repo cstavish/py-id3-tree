@@ -101,12 +101,12 @@ class ID3_Tree:
 	def print_tree(self, root, level):
 		if root == None:
 			root = self.root
-		for child in root['children'].keys():
-			if type(root['children'][child]) is str:
-				print ('\t' * level) + root['feature_name'] + '=' + child + ' ' + str(root['children'][child])
+		for child_key in root['children'].keys():
+			if type(root['children'][child_key]) is str:
+				print ('\t' * level) + root['feature_name'] + '=' + child_key + ' ' + str(root['children'][child_key])
 			else:
-				print ('\t' * level) + root['feature_name'] + '=' + child
-				self.print_tree(root['children'][child], level + 1)
+				print ('\t' * level) + root['feature_name'] + '=' + child_key
+				self.print_tree(root['children'][child_key], level + 1)
 
 	def classify(self, object):
 		return
