@@ -53,14 +53,15 @@ class ID3_Tree:
 				break
 
 		if all_identical:
-			return examples[0]['label']
+			return (examples[0]['label'], len(examples), len(examples))
 
 		# if features is empty
 			# return root with most common label in examples
 
 		if len(features) == 0:
 			labels = [e['label'] for e in examples]
-			return Counter(labels).most_common(1)[0][0]
+			most_common = Counter(labels).most_common(1)[0] # (label, count)
+			return (most_common[0], most_common[1], len(examples))
 
 		# compute gain() for all features
 		# associate root with xi* (highest gain)
@@ -90,9 +91,9 @@ class ID3_Tree:
 				root['children'][v] = subtree
 			else:
 				labels = [e['label'] for e in examples]
-				root['children'][v] = Counter(labels).most_common(1)[0][0]
+				most_common = Counter(labels).most_common(1)[0]
+				root['children'][v] = (most_common[0], most_common[1], len(examples))
 
-		#print 'returning root ', root
 		return root
 
 	def train(self):
@@ -102,8 +103,9 @@ class ID3_Tree:
 		if root == None:
 			root = self.root
 		for child_key in root['children'].keys():
-			if type(root['children'][child_key]) is str:
-				print ('\t' * level) + root['feature_name'] + '=' + child_key + ' ' + str(root['children'][child_key])
+			if type(root['children'][child_key]) is tuple: # (label, #examples with label, #examples in subset)
+				leaf = root['children'][child_key]
+				print ('\t' * level) + root['feature_name'] + '=' + child_key + ' ' + leaf[0] + ' ' + str(leaf[1]) + '/' + str(leaf[2])
 			else:
 				print ('\t' * level) + root['feature_name'] + '=' + child_key
 				self.print_tree(root['children'][child_key], level + 1)
