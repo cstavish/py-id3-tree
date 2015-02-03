@@ -9,19 +9,18 @@ from collections import Counter
 # define gain functions
 
 def entropy(S):
-	entropy = 0
-	labels = [e['label'] for e in S]
-	cnt = Counter(labels)
-	for label in cnt.keys():
-		p_label = float(cnt[label]) / len(S)
-		entropy += (-p_label * math.log(p_label, 2))
-	return entropy
+	cnt = Counter([e['label'] for e in S])
+	p_labels = [float(cnt[label]) / len(S) for label in cnt.keys()]
+	return sum([-p_label * math.log(p_label, 2) for p_label in p_labels])
 
 def misclassification(S):
-	return
+	cnt = Counter([e['label'] for e in S])
+	most_common = cnt.most_common(1)[0]
+	return 1 - float(most_common[1]) / len(S)
 
 def gini(S):
-	return
+	cnt = Counter([e['label'] for e in S])
+	return 1 - sum([(float(cnt[label] / len(S))**2) for label in cnt.keys()])
 
 class ID3_Tree:
 	def __init__(self, labels, features, examples, diversity_func):
@@ -38,7 +37,8 @@ class ID3_Tree:
 			for e in examples:
 				if e['values'][feature['name']] == v:
 					Sv.append(e)
-			diversity_sum += self.diversity_func(Sv) * (float(len(Sv))/len(examples))
+			if len(Sv) > 0:
+				diversity_sum += self.diversity_func(Sv) * (float(len(Sv))/len(examples))
 		return entropy - diversity_sum
 
 	def _train(self, examples, features):
