@@ -8,16 +8,19 @@ from collections import Counter
 
 # define gain functions
 
+# Sum{label} -p_label * log2(p_label)
 def entropy(S):
 	cnt = Counter([e['label'] for e in S])
 	p_labels = [float(cnt[label]) / len(S) for label in cnt.keys()]
 	return sum([-p_label * math.log(p_label, 2) for p_label in p_labels])
 
+# 1 - max{label} p_label
 def misclassification(S):
 	cnt = Counter([e['label'] for e in S])
 	most_common = cnt.most_common(1)[0]
 	return 1 - float(most_common[1]) / len(S)
 
+# 1 - Sum{label} p_label^2
 def gini(S):
 	cnt = Counter([e['label'] for e in S])
 	return 1 - sum([(float(cnt[label] / len(S))**2) for label in cnt.keys()])
@@ -109,6 +112,7 @@ class ID3_Tree:
 		if root == None:
 			root = self.root
 		for child_key in root['children'].keys():
+			# if we've reached a leaf node
 			if type(root['children'][child_key]) is tuple: # (label, #examples with label, #examples in subset)
 				leaf = root['children'][child_key]
 				print ('\t' * level) + root['feature_name'] + '=' + child_key + ' ' + leaf[0] + ' ' + str(leaf[1]) + '/' + str(leaf[2])
@@ -118,7 +122,7 @@ class ID3_Tree:
 
 
 	def _classify(self, data_point, root):
-		# base case
+		# base case (leaf node), return label
 		if type(root) is tuple:
 			return root[0]
 
@@ -188,12 +192,16 @@ def main():
 	training_results = [tree.classify(e['values']) == e['label'] for e in training_set]
 	n_correct = Counter(training_results)[True]
 
-	print 'The accuracy on the training set is ' + str(n_correct) + '/' + str(len(training_set)) + ' = ' + str((float(n_correct)/len(training_set)*100)) + '%'
+	accuracy = float(n_correct) / len(training_set) * 100
+
+	print 'The accuracy on the training set is ' + str(n_correct) + '/' + str(len(training_set)) + ' = ' + str(accuracy) + '%'
 
 	test_results = [tree.classify(e['values']) == e['label'] for e in test_set]
 	n_correct = Counter(test_results)[True]
 
-	print 'The accuracy on the test set is ' + str(n_correct) + '/' + str(len(test_set)) + ' = ' + str((float(n_correct)/len(test_set)*100)) + '%'
+	accuracy = float(n_correct) / len(test_set) * 100
+
+	print 'The accuracy on the test set is ' + str(n_correct) + '/' + str(len(test_set)) + ' = ' + str(accuracy) + '%'
 
 	print 'The final decision tree:'
 	tree.print_tree()
