@@ -29,6 +29,15 @@ class ID3_Tree:
 		self.examples = examples
 		self.diversity_func = diversity_func
 
+	def train(self):
+		self.root = self._train(self.examples, self.features)
+
+	def print_tree(self):
+		self._print_tree(self.root, 0)
+
+	def classify(self, data_point):
+		return self._classify(data_point, self.root)
+
 	def _gain(self, feature, examples):
 		entropy = self.diversity_func(examples)
 		diversity_sum = 0
@@ -96,9 +105,6 @@ class ID3_Tree:
 
 		return root
 
-	def train(self):
-		self.root = self._train(self.examples, self.features)
-
 	def _print_tree(self, root, level):
 		if root == None:
 			root = self.root
@@ -110,8 +116,6 @@ class ID3_Tree:
 				print ('\t' * level) + root['feature_name'] + '=' + child_key
 				self._print_tree(root['children'][child_key], level + 1)
 
-	def print_tree(self):
-		self._print_tree(self.root, 0)
 
 	def _classify(self, data_point, root):
 		# base case
@@ -119,9 +123,6 @@ class ID3_Tree:
 			return root[0]
 
 		return self._classify(data_point, root['children'][data_point[root['feature_name']]])
-
-	def classify(self, data_point):
-		return self._classify(data_point, self.root)
 
 def main():
 	features = []
